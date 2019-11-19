@@ -8,7 +8,7 @@ from scipy.special import jnp_zeros
 gamma = 42.515e6 * 2*np.pi
 
 
-def vangelderen_cylinder_perp_ln_terms(D, R, scheme, m_max=5):
+def vangelderen_cylinder_perp_ln_terms(D, R, scheme, m_max=10):
 	# returns the scaling factors and the list of each summation component for ln(M(DELTA,delta,G)/M(0))
 	# D:= free diffusivity in m^2 s^-1
 	# R:= cylinder radius in m
@@ -35,7 +35,7 @@ def vangelderen_cylinder_perp_ln_terms(D, R, scheme, m_max=5):
 	return fac, comp
 
 
-def vangelderen_cylinder_perp(D, R, scheme, m_max=5):
+def vangelderen_cylinder_perp(D, R, scheme, m_max=10):
 	# get the parts
 	fac, comp = vangelderen_cylinder_perp_ln_terms(D, R, scheme, m_max)
 	lnS = fac*np.sum(comp, axis=0)
