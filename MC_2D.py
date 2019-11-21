@@ -61,10 +61,10 @@ def compute_D(known_dx, known_dt):
 
 # encodes unit vector x, -x, y, -y 
 vec_2D = np.zeros((4,2))
-vec[0][0] = 1
-vec[1][0] = -1
-vec[2][1] = 1
-vec[3][1] = -1
+vec_2D[0][0] = 1
+vec_2D[1][0] = -1
+vec_2D[2][1] = 1
+vec_2D[3][1] = -1
 def _hop(canvas, particule, moves=vec_2D):
 	# Performs one timestep of discrete 2D montecarlo
 	# 1/ndim chance of diffusing in each dimension
@@ -73,13 +73,13 @@ def _hop(canvas, particule, moves=vec_2D):
 	# In practice, this simply gives equal probability to everything in the moves vector
 	c = np.random.choice(range(moves.shape[0]), particule.shape[0])
 	# assumes square canvas and proper moves vector for the dimensionality
-	new_particule = np.clip(particule+moves[c], 0, canvas.shape[0]-1).astype(np.int)
+	new_particule = np.clip(particule+moves[c], 0, canvas.shape[0]-1).astype(np.uint16)
 	return new_particule
 
 
 def draw_particule(size, particule):
 	# ndim "square" canvas
-	image = np.zeros((size,)*particule.shape[1], dtype=np.int)
+	image = np.zeros((size,)*particule.shape[1], dtype=np.uint32)
 	# loop over all particules
 	for i in np.arange(particule.shape[0]):
 		# image[particule[i,0], particule[i,1]] += 1
@@ -97,35 +97,45 @@ def draw_particule(size, particule):
 
 def initialize_uniform_particule(canvas, N_per_pos):
 	# 1 particule per canvas positions
-	particule = np.array(np.where(canvas)).T
+	particule = np.array(np.where(canvas)).T.astype(np.uint16)
 	# count positions
 	N_part = particule.shape[0]
 	# duplicate positions N_per_pos times
-	particule = np.repeat(particule, N_per_pos, axis=0)
+	particule = np.repeat(particule, N_per_pos, axis=0).astype(np.uint16)
 	return particule
 
 
-def perform_MC_2D(canvas, init_position, num_dt):
+
+# maybe?
+# uint8	Unsigned integer (0 to 255)
+# uint16	Unsigned integer (0 to 65535)
+def perform_MC_2D(canvas, init_position, num_dt, sample_rate):
 	# Perform discrete Monte-Carlo
 	# canvas encodes the boundaries [(N1, N2, ...) boolean]
 	# init_position has the canvas position of each particules [(#particule, #dimensions) integer]
 	# num_dt is the number of times steps
-	# return the full particules history
-
+	# return a subsampled particules history (every sample_rate timestep)
+	num_samples = int(np.ceil(num_dt / float(sample_rate)))
+	time_history = np.empty((num_samples, ))
+	particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.uint16)
+	i_log = 1
 	# init
-	particule_history = np.empty((num_dt+1, init_position.shape[0], init_position.shape[1]))
 	particule_history[0] = init_position
 	new_particule = init_position
-	# iterate over all time step
-	for it in range(num_dt):
+	# iterate over all time step (timestep 0 is the init)
+	for it in range(1, num_dt+1):
 		# rotate values
 		old_particule = new_particule.copy()
 		# perform 1 timestep
 		new_particule = _hop(canvas, old_particule, moves=vec_2D)
-		# log new positions
-		particule_history[it+1] = new_particule
+		# log new positions (sometime)
+		if not (it%sample_rate):
+			# log iteration so we can compute time outside of the function with the known dt
+			time_history[i_log] = it
+			particule_history[i_log] = new_particule
+			i_log += 1
 
-	return particule_history
+	return time_history, particule_history
 
 
 
