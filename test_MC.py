@@ -117,8 +117,6 @@ else:
 
 ## gif package
 
-
-
 # compute the canvas at each logging point
 images = np.zeros((particule_history.shape[0], canvas.shape[0], canvas.shape[1]), dtype=np.uint32)
 for i in range(particule_history.shape[0]):
@@ -143,29 +141,6 @@ def animate_func(i):
 anim = FuncAnimation(fig, animate_func, frames = range(datas.shape[0]), interval = 1000 / fps, blit = True)
 # anim.save('/home/raid2/paquette/Pictures/discrete_mc/inner/test_circle_4.mp4', fps=fps,  dpi=300)
 pl.show()
-
-
-
-
-
-
-
-
-# ## signal generation package
-
-
-# deltas = np.arange(5e-3,55e-3,5e-3)
-
-# gs = []
-# for delta in deltas:
-#     grad = mc.square_gradient(0.3, delta, 100e-3 - delta, time_history*dt*1e-3)
-#     gs.append(grad)
-
-# for g in gs:
-#     pl.figure()
-#     pl.plot(time_history*dt*1e-3, g)
-#     pl.show()
-
 
 
 

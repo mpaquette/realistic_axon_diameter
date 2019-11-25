@@ -2,6 +2,8 @@ import numpy as np
 import warnings
 from time import time
 
+#  T^-1 s^-1
+gamma = 42.515e6 * 2*np.pi
 
 def canvas_single_circle(radius_pixel, side_pixels=None, center_pixel=None):
 	# draw canvas for 2D monte carlo simulation of a single circle
@@ -207,31 +209,27 @@ def perform_MC_2D_2times(canvas, init_position, num_dt, early_thr_dt, sample_rat
 
 
 
-
-
-
-
-
-
-
-
-
-
-# def dist_from_init_in_ori(positions, orientation):
-# 	# absolute displacement from initial position at each time step
-# 	displacement = (positions[1:] -  positions[0]).reshape(((positions.shape[0]-1)*positions.shape[1], positions.shape[2]))
-# 	# normalized gradient orientation (gradient strenght will be computed elsewhere)
-# 	orientation = orientation/np.linalg.norm(orientation)
-# 	# project displacement along the gradient orientation
-# 	relevant_displacement = np.dot(displacement, orientation)
-# 	return relevant_displacement.reshape((positions.shape[0]-1, positions.shape[1]))
-
-
 def square_gradient(G, smalldelta, bigdelta, times):
 	grad = np.zeros_like(times)
 	grad[np.logical_and(times>=0, times<=smalldelta)] = G
 	grad[np.logical_and(times>=bigdelta, times<=bigdelta+smalldelta)] = -G
 	return grad
 
+
+def signal_from_MC(g_norm, g_orient, x, dt):
+	# generate diffusion signal from MC paths for ONE gradient profile/orientation
+	# g_norm is the gradient norm in T m^-1
+	# g_orient is the 2D orientation of the gradient
+	# x is the relative position (to t_0) in m
+	# dt is the vector of time interval corresponding the x in s
+
+	# make sure g_orient is normed
+	g_orient = g_orient / np.linalg.norm(g_orient)
+	# phi = - gamma * integral(x.g dt)
+	dephasing = -gamma * np.sum(g_norm[:,None] * x.dot(g_orient) * time_interval[:,None], axis=0)
+	# E(g) = < exp(i*phi) > [ensemble-average]
+	# return magnitude signal
+	complex_signals = np.exp(1j*dephasing)
+	return np.abs(np.mean(complex_signals))
 
 

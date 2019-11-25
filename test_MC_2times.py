@@ -29,7 +29,7 @@ print('dx within limt? {}     {:.2e}  <=  {:.2e}'.format(dx <= maximum_dx, dx, m
 print('dt within limt? {}     {:.2e}  <=  {:.2e}'.format(dt <= maximum_dt, dt, maximum_dt))
 
 
-desired_circle_diameter = 5.0 # um
+desired_circle_diameter = 1.0 # um
 # compute circle radius in canvas pixel
 radius_pixel = int(np.ceil((desired_circle_diameter/2.) / dx))
 # radius_pixel = int(np.floor((circle_diameter/2.) / dx))
@@ -139,72 +139,6 @@ time_interval = timestamp[1:] - timestamp[:-1]
 
 
 
-## gif package
-
-
-# # compute the canvas at each logging point
-# images = np.zeros((particule_history.shape[0], canvas.shape[0], canvas.shape[1]), dtype=np.uint32)
-# for i in range(particule_history.shape[0]):
-#     images[i] = mc.draw_particule(canvas.shape[0], particule_history[i])
-
-
-
-# datas = images.copy()
-# # maxv = datas.max()
-# maxv = 2
-# fps = 30.
-
-# fig = pl.figure(figsize=(8,8))
-# im = pl.imshow(np.zeros_like(datas[0]), interpolation='none', vmin=0, vmax=maxv)
-# pl.axis('off')
-# pl.colorbar()
-
-# def animate_func(i):
-#     im.set_array(datas[i])
-#     return [im]
-
-# anim = FuncAnimation(fig, animate_func, frames = range(datas.shape[0]), interval = 1000 / fps, blit = True)
-# # anim.save('/home/raid2/paquette/Pictures/discrete_mc/inner/test_circle_4.mp4', fps=fps,  dpi=300)
-# pl.show()
-
-
-
-
-
-
-
-
-
-distance_origin = particule_history[1:].astype(np.int16) - particule_history[0].astype(np.int16)
-
-
-sq_dist_x = (distance_origin[:,:,0]*dx)**2
-sq_dist_y = (distance_origin[:,:,1]*dx)**2
-
-sq_dist = np.linalg.norm(distance_origin*dx, axis=2)**2
-
-
-MSD_x = sq_dist_x.mean(axis=1)
-MSD_y = sq_dist_y.mean(axis=1)
-MSD = sq_dist.mean(axis=1)
-
-
-pl.figure()
-pl.plot(time_history[1:]*dt, MSD_x, label='MSD x')
-pl.plot(time_history[1:]*dt, MSD_y, label='MSD y')
-pl.plot(time_history[1:]*dt, MSD, label='MSD')
-pl.legend()
-pl.show()
-
-
-pl.figure()
-pl.plot(time_history[1:]*dt, MSD_x/(2*time_history[1:]*dt), label='D x')
-pl.plot(time_history[1:]*dt, MSD_y/(2*time_history[1:]*dt), label='D y')
-pl.plot(time_history[1:]*dt, MSD/(2*time_history[1:]*dt), label='D')
-pl.legend()
-pl.show()
-
-
 
 
 
@@ -225,7 +159,6 @@ pl.show()
 # (g_norm*time_interval).sum() == 0
 
 
-
 #  T^-1 s^-1
 gamma = 42.515e6 * 2*np.pi
 
@@ -233,37 +166,8 @@ gamma = 42.515e6 * 2*np.pi
 
 
 
-
-# # FREE DIFF + CORRECT MC
-# bval = (GMAX*gamma*delta*1e-3)**2 * (Delta*1e-3 - delta*1e-3/3.) # s / m^2
-# # bval*1e-9 # ms / um^2
-# theory_signal = np.exp(-bval*mc.compute_D(dx, dt)*1e-9)
-# print(theory_signal)
-# relative_position = (particule_history[1:].astype(np.int16) - particule_history[0].astype(np.int16)) * dx # um
-# relative_position_x = relative_position[:,:,0]
-# # gamma : T^-1 s^-1
-# # g_norm : T m^-1
-# # relative_position_x : um
-# # time_interval : ms
-# # phi = integral(g(t)*r(t) dt) : no unit
-# phi = -gamma * np.sum(g_norm[:,None] * (1e-6*relative_position_x) * (1e-3*time_interval[:,None]), axis=0)
-# pl.figure()
-# pl.hist(phi, 100)
-# pl.show()
-# complex_signals = np.exp(1j*phi)
-# pl.figure()
-# pl.subplot(1,2,1)
-# pl.hist(complex_signals.real, 100)
-# pl.subplot(1,2,2)
-# pl.hist(complex_signals.imag, 100)
-# pl.show()
-# print(np.mean(complex_signals))
-# print(np.abs(np.mean(complex_signals)))
-
-
-
-from vangelderen import *
-E_theory = vangelderen_cylinder_perp(mc.compute_D(dx, dt)*1e-9, 0.5*actual_circle_diameter*1e-6, np.array([[GMAX, Delta*1e-3, delta*1e-3]]))
+import vangelderen as vg
+E_theory = vg.vangelderen_cylinder_perp(mc.compute_D(dx, dt)*1e-9, 0.5*actual_circle_diameter*1e-6, np.array([[GMAX, Delta*1e-3, delta*1e-3]]))
 print(E_theory)
 
 
@@ -272,14 +176,12 @@ print(E_theory)
 relative_position = (particule_history[1:].astype(np.int16) - particule_history[0].astype(np.int16)) * dx # um
 
 
-g_orient = np.array([1., 1])
-
+# g_orient = np.array([1., 1])
 v = []
-for angle in np.linspace(0, 2*np.pi, 100, endpoint=False):
+for angle in np.linspace(0, 2*np.pi, 10, endpoint=False):
     g_orient = np.array([np.cos(angle), np.sin(angle)])
 
     g_orient = g_orient / np.linalg.norm(g_orient)
-
 
     absolute_distance = relative_position.dot(g_orient) * time_interval[:,None] # um ms
     total_dephasing = np.sum(absolute_distance * 1e-6*g_norm[:,None], axis=0) # T ms
@@ -290,44 +192,11 @@ for angle in np.linspace(0, 2*np.pi, 100, endpoint=False):
     complex_signal = np.exp(1j*(-effective_dephasing))
     magn_signal = np.abs(np.mean(complex_signal))
 
-    print(magn_signal)
+    # print(magn_signal)
     v.append(magn_signal)
 
-print('MEAN')
+
 print(np.mean(v))
-print(E_theory)
-
-
-
-
-
-# ## signal generation package
-
-# # actual_simulation_length
-# deltas = np.arange(5e-3,55e-3,5e-3)
-
-# gs = []
-# for delta in deltas:
-#     grad = mc.square_gradient(0.3, delta, 100e-3 - delta, time_history*dt*1e-3)
-#     gs.append(grad)
-
-# for g in gs:
-#     pl.figure()
-#     pl.plot(time_history*dt*1e-3, g)
-#     pl.show()
-
-
-
-
-# # accumulated delta "Magnetic field" in T
-# net_tesla_diff = np.sum(grad[1:,None]*time_interval[:,None]*displacement, axis=0) 
-
-# s = np.exp(1j*(-gyro*net_tesla_diff))
-# sm = np.abs(np.mean(s))
-
-
-
-
 
 
 
