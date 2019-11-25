@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-
+from time import time
 
 
 def canvas_single_circle(radius_pixel, side_pixels=None, center_pixel=None):
@@ -10,7 +10,7 @@ def canvas_single_circle(radius_pixel, side_pixels=None, center_pixel=None):
 	# canvas has size side_pixels[0] by side_pixels[1] (None = np.ceil(2*radius_pixel+1))
 
 	if side_pixels is None:
-		side_pixels = (int(np.ceil(2*radius_pixel+1)),)*2
+		side_pixels = (int(np.ceil(2*radius_pixel+3)),)*2
 
 	if center_pixel is None:
 		center_pixel = (side_pixels[0]//2, side_pixels[1]//2)
@@ -18,6 +18,9 @@ def canvas_single_circle(radius_pixel, side_pixels=None, center_pixel=None):
 	if 2*radius_pixel >= np.min(side_pixels):
 		warnings.warn('Circle is too big for canvas, returning NaN')
 		return np.nan
+
+	if max(side_pixels) >= 2**16-1:
+		print('Careful, matrix size is too big for the uint16 used to encode position in some of the functions')
 
 	# circle boundaries
 	b_min_x = center_pixel[0] - radius_pixel
@@ -74,7 +77,7 @@ def _hop(canvas, particule, moves=vec_2D):
 	c = np.random.choice(range(moves.shape[0]), particule.shape[0])
 	# assumes square canvas and proper moves vector for the dimensionality
 	new_particule = np.clip(particule+moves[c], 0, canvas.shape[0]-1).astype(np.uint16)
-	return new_particule
+	return np.where(canvas[(new_particule[:,0], new_particule[:,1])][:,None], new_particule, particule)
 
 
 def draw_particule(size, particule):
@@ -106,23 +109,26 @@ def initialize_uniform_particule(canvas, N_per_pos):
 
 
 
-# maybe?
-# uint8	Unsigned integer (0 to 255)
-# uint16	Unsigned integer (0 to 65535)
-def perform_MC_2D(canvas, init_position, num_dt, sample_rate):
+
+def perform_MC_2D(canvas, init_position, num_dt, sample_rate, verbose=False):
 	# Perform discrete Monte-Carlo
 	# canvas encodes the boundaries [(N1, N2, ...) boolean]
 	# init_position has the canvas position of each particules [(#particule, #dimensions) integer]
 	# num_dt is the number of times steps
+	# sample_rate is the number dt between each recordings
 	# return a subsampled particules history (every sample_rate timestep)
-	num_samples = int(np.ceil(num_dt / float(sample_rate)))
+	num_samples = int(np.ceil((num_dt+1) / float(sample_rate)))
 	time_history = np.empty((num_samples, ))
 	particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.uint16)
 	i_log = 1
 	# init
 	particule_history[0] = init_position
 	new_particule = init_position
+	# verbose rate every p
+	p = 0.01
+	verbose_sample_rate = int(np.floor(num_dt*p))
 	# iterate over all time step (timestep 0 is the init)
+	begin_t = time() 	
 	for it in range(1, num_dt+1):
 		# rotate values
 		old_particule = new_particule.copy()
@@ -135,9 +141,97 @@ def perform_MC_2D(canvas, init_position, num_dt, sample_rate):
 			particule_history[i_log] = new_particule
 			i_log += 1
 
+		# print progress for debugging
+		if verbose:
+			if not ((it-1)%verbose_sample_rate):
+				print('{} / {}  ({:.2f} %)    total time = {:.2f} s'.format(it,num_dt, 100*it/float(num_dt), time() - begin_t))
+
+	end_t = time()
+	print('elapsed time = {:.2f} s'.format(end_t - begin_t))
+
 	return time_history, particule_history
 
 
+
+def perform_MC_2D_2times(canvas, init_position, num_dt, early_thr_dt, sample_rate_early, sample_rate_late, verbose=False):
+	# Perform discrete Monte-Carlo, same as function perform_MC_2D, but 2 level of sampling
+	# canvas encodes the boundaries [(N1, N2, ...) boolean]
+	# init_position has the canvas position of each particules [(#particule, #dimensions) integer]
+	# num_dt is the number of times steps
+	# early_thr_dt is the number of times step until the end of the "early" period 
+	# sample_rate_early is the number dt between each recordings until early_thr_dt
+	# sample_rate_late is the number dt between each recordings after early_thr_dt
+	# return a subsampled particules history
+	num_samples_early = int(np.ceil((early_thr_dt+1) / float(sample_rate_early)))
+	num_samples_late = int(np.floor((num_dt - early_thr_dt) / float(sample_rate_late)))
+	num_samples = num_samples_early + num_samples_late
+	time_history = np.empty((num_samples, ))
+	particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.uint16)
+	i_log = 1
+	# init
+	particule_history[0] = init_position
+	new_particule = init_position
+	# verbose rate every p
+	p = 0.01
+	verbose_sample_rate = int(np.floor(num_dt*p))
+	# iterate over all time step (timestep 0 is the init)
+	begin_t = time() 	
+	for it in range(1, num_dt+1):
+		# rotate values
+		old_particule = new_particule.copy()
+		# perform 1 timestep
+		new_particule = _hop(canvas, old_particule, moves=vec_2D)
+		# log new positions (sometime)
+		if it <= early_thr_dt:
+			if not (it%sample_rate_early):
+				# log iteration so we can compute time outside of the function with the known dt
+				time_history[i_log] = it
+				particule_history[i_log] = new_particule
+				i_log += 1
+		else:
+			if not (it%sample_rate_late):
+				# log iteration so we can compute time outside of the function with the known dt
+				time_history[i_log] = it
+				particule_history[i_log] = new_particule
+				i_log += 1
+
+		# print progress for debugging
+		if verbose:
+			if not ((it-1)%verbose_sample_rate):
+				print('{} / {}  ({:.2f} %)    total time = {:.2f} s'.format(it,num_dt, 100*it/float(num_dt), time() - begin_t))
+
+	end_t = time()
+	print('elapsed time = {:.2f} s'.format(end_t - begin_t))
+
+	return time_history, particule_history
+
+
+
+
+
+
+
+
+
+
+
+
+
+# def dist_from_init_in_ori(positions, orientation):
+# 	# absolute displacement from initial position at each time step
+# 	displacement = (positions[1:] -  positions[0]).reshape(((positions.shape[0]-1)*positions.shape[1], positions.shape[2]))
+# 	# normalized gradient orientation (gradient strenght will be computed elsewhere)
+# 	orientation = orientation/np.linalg.norm(orientation)
+# 	# project displacement along the gradient orientation
+# 	relevant_displacement = np.dot(displacement, orientation)
+# 	return relevant_displacement.reshape((positions.shape[0]-1, positions.shape[1]))
+
+
+def square_gradient(G, smalldelta, bigdelta, times):
+	grad = np.zeros_like(times)
+	grad[np.logical_and(times>=0, times<=smalldelta)] = G
+	grad[np.logical_and(times>=bigdelta, times<=bigdelta+smalldelta)] = -G
+	return grad
 
 
 
