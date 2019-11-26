@@ -226,7 +226,7 @@ def signal_from_MC(g_norm, g_orient, x, dt):
 	# make sure g_orient is normed
 	g_orient = g_orient / np.linalg.norm(g_orient)
 	# phi = - gamma * integral(x.g dt)
-	dephasing = -gamma * np.sum(g_norm[:,None] * x.dot(g_orient) * time_interval[:,None], axis=0)
+	dephasing = -gamma * np.sum(g_norm[:,None] * x.dot(g_orient) * dt[:,None], axis=0)
 	# E(g) = < exp(i*phi) > [ensemble-average]
 	# return magnitude signal
 	complex_signals = np.exp(1j*dephasing)
