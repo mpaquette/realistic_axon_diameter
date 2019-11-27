@@ -32,13 +32,15 @@ def vangelderen_diff(d_small, d_big, D_0, delta, G):
 
 
 # invivo diffusivity
-D0 = 2e-9
+# D0 = 2e-9
+D0 = 0.66e-9
 # most sensitive Connectom-like scheme
 scheme_connectom = np.array([[0.3, 40e-3, 40e-3]])
 # alpha significance level
 alpha = 0.05
 # data SNR at B0
-SNR = 30.0
+# SNR = 30.0
+SNR = 300.0
 
 #  T^-1 s^-1
 gamma = 42.515e6 * 2*np.pi
@@ -88,10 +90,19 @@ for i,d in enumerate(d_dict):
 pl.figure()
 pl.errorbar(np.array(d_dict)*1e6, np.array(d_dict)*1e6, yerr=nilsson_errbar*1e6)
 pl.title('Nilsson   sigma_bar = {:.3f}'.format(sigmab))
+pl.gca().set_aspect('equal')
+
+pl.xlim([0, 1.05*np.max(d_dict)*1e6])
+pl.ylim([0, 1.05*np.max(d_dict)*1e6])
+
 
 pl.figure()
 pl.errorbar(np.array(d_dict)*1e6, np.array(d_dict)*1e6, yerr=vg_errbar*1e6)
 pl.title('Vangelderen   sigma_bar = {:.3f}'.format(sigmab))
+pl.gca().set_aspect('equal')
+
+pl.xlim([0, 1.05*np.max(d_dict)*1e6])
+pl.ylim([0, 1.05*np.max(d_dict)*1e6])
 
 pl.show()
 
