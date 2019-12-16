@@ -10,6 +10,12 @@ def nilsson_diameter(sigma_bar, D_0, delta, G):
 	# valid (expanded) around low diffusivity (aka low d_min)
 	return ((768 * sigma_bar * D_0) / (7. * gamma**2 * delta * G**2))**(1/4.)
 
+def nilsson_diameter_WRONG(sigma_bar, D_0, delta, G):
+	# d_min =  ((768 sigma_bar D_0) / (7 gamma^2 delta G^2))^(1/4)
+	# assume delta = DELTA
+	# valid (expanded) around low diffusivity (aka low d_min)
+	return (768 * sigma_bar * D_0/7.) / ((gamma**2 * delta * G**2))**(1/4.)
+
 def nilsson_dS(d, D_0, delta, G):
 	# dS/S_0 =  (7 gamma^2 delta G^2 d^4) / (768 D_0)
 	# assume delta = DELTA

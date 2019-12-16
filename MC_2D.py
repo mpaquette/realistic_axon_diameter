@@ -44,6 +44,56 @@ def canvas_single_circle(radius_pixel, side_pixels=None, center_pixel=None):
 	return canvas
 
 
+
+# x^2/a^2 + y^2/b^2 <= 1
+# height and width 2a and 2b
+
+def canvas_single_ellipse(radius_pixels, side_pixels=None, center_pixel=None):
+	# draw canvas for 2D monte carlo simulation of a single ellipse
+	# ellipse has (x,y)-"radius" radius_pixels pixels
+	# ellipse is centered at center_pixel (None = canvas center)
+	# canvas has size side_pixels[0] by side_pixels[1] (None = np.ceil(2*radius_pixel+1))
+
+	# keeping it square
+	if side_pixels is None:
+		side_pixels = (int(np.ceil(2*max(radius_pixels)+3)),)*2
+
+	if center_pixel is None:
+		center_pixel = (side_pixels[0]//2, side_pixels[1]//2)
+
+	if 2*radius_pixels[0] >= side_pixels[0]:
+		warnings.warn('Ellipse is too big for canvas (in x), returning NaN')
+		return np.nan
+
+	if 2*radius_pixels[1] >= side_pixels[1]:
+		warnings.warn('Ellipse is too big for canvas (in y), returning NaN')
+		return np.nan
+
+	if max(side_pixels) >= 2**16-1:
+		print('Careful, matrix size is too big for the uint16 used to encode position in some of the functions')
+
+	# ellipse boundaries
+	b_min_x = center_pixel[0] - radius_pixels[0]
+	b_max_x = center_pixel[0] + radius_pixels[0]
+	b_min_y = center_pixel[1] - radius_pixels[1]
+	b_max_y = center_pixel[1] + radius_pixels[1]
+
+	if (b_min_x < 0) or (b_max_x > side_pixels[0]) or (b_min_y < 0) or (b_max_y > side_pixels[1]):
+		warnings.warn('Ellipse is poking out of canvas, returning NaN')
+		return np.nan
+
+	canvas = np.zeros(side_pixels, dtype=np.bool)
+
+	for ix in range(side_pixels[0]):
+		for iy in range(side_pixels[1]):
+			if ((ix-center_pixel[0])**2 / float(radius_pixels[0]**2)) + ((iy-center_pixel[1])**2  / float(radius_pixels[1]**2)) <= 1:
+				canvas[ix, iy] = True
+
+	return canvas
+
+
+
+
 def compute_dt(known_D, known_dx):
 	# D = MSD / (2 dt) = ((dx^2)/ndim) / (2 dt)
 	# dt = ((dx^2)/ndim) / (2 D)
