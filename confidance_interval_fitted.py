@@ -17,16 +17,16 @@ def nilsson_dS(d, D_0, delta, G):
 
 
 # invivo diffusivity
-# D0 = 2e-9
-D0 = 0.66e-9
+D0 = 2e-9
+# D0 = 0.66e-9
 # most sensitive Connectom-like scheme
-# scheme_connectom = np.array([[0.3, 40e-3, 40e-3]])
-scheme_connectom = np.array([[1.5, 40e-3, 40e-3]])
+scheme_connectom = np.array([[0.3, 40e-3, 40e-3]])
+# scheme_connectom = np.array([[1.5, 40e-3, 40e-3]])
 # alpha significance level
 alpha = 0.05
 # data SNR at B0
-# SNR = 30.0
-SNR = 300.0
+SNR = 30.0
+# SNR = 300.0
 
 #  T^-1 s^-1
 gamma = 42.515e6 * 2*np.pi
@@ -37,7 +37,8 @@ sigmab = norm().ppf(1-alpha) / SNR
 
 
 # diameters in m
-diams = np.arange(0.1, 5.1, 0.1)*1e-6
+# diams = np.arange(0.1, 5.1, 0.1)*1e-6
+diams = np.arange(0.1, 5.1, 0.05)*1e-6
 # number of noise trial
 Ntrial = 100
 
@@ -63,7 +64,7 @@ d_min = nilsson_diameter(sigmab, D0, scheme_connectom[0,2], scheme_connectom[0,0
 
 
 pl.figure()
-pl.scatter(np.repeat(diams, Ntrial)*1e6, fit_data.ravel()*1e6, color='blue')
+pl.scatter(np.repeat(diams, Ntrial)*1e6, fit_data.ravel()*1e6, color='blue', alpha = 0.1)
 pl.plot(diams*1e6, diams*1e6, color='green')
 pl.axvline(d_min*1e6, color='r')
 

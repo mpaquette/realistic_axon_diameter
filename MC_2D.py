@@ -21,8 +21,10 @@ def canvas_single_circle(radius_pixel, side_pixels=None, center_pixel=None):
 		warnings.warn('Circle is too big for canvas, returning NaN')
 		return np.nan
 
-	if max(side_pixels) >= 2**16-1:
-		print('Careful, matrix size is too big for the uint16 used to encode position in some of the functions')
+	# if max(side_pixels) >= 2**16-1:
+		# print('Careful, matrix size is too big for the uint16 used to encode position in some of the functions')
+	if max(side_pixels) >= 2**15-1:
+		print('Careful, matrix size is too big for the int16 used to encode position in some of the functions')
 
 	# circle boundaries
 	b_min_x = center_pixel[0] - radius_pixel
@@ -69,8 +71,10 @@ def canvas_single_ellipse(radius_pixels, side_pixels=None, center_pixel=None):
 		warnings.warn('Ellipse is too big for canvas (in y), returning NaN')
 		return np.nan
 
-	if max(side_pixels) >= 2**16-1:
-		print('Careful, matrix size is too big for the uint16 used to encode position in some of the functions')
+	# if max(side_pixels) >= 2**16-1:
+	# 	print('Careful, matrix size is too big for the uint16 used to encode position in some of the functions')
+	if max(side_pixels) >= 2**15-1:
+		print('Careful, matrix size is too big for the int16 used to encode position in some of the functions')
 
 	# ellipse boundaries
 	b_min_x = center_pixel[0] - radius_pixels[0]
@@ -115,7 +119,7 @@ def compute_D(known_dx, known_dt):
 
 
 # encodes unit vector x, -x, y, -y 
-vec_2D = np.zeros((4,2))
+vec_2D = np.zeros((4,2), dtype=np.int16)
 vec_2D[0][0] = 1
 vec_2D[1][0] = -1
 vec_2D[2][1] = 1
@@ -128,7 +132,8 @@ def _hop(canvas, particule, moves=vec_2D):
 	# In practice, this simply gives equal probability to everything in the moves vector
 	c = np.random.choice(range(moves.shape[0]), particule.shape[0])
 	# assumes square canvas and proper moves vector for the dimensionality
-	new_particule = np.clip(particule+moves[c], 0, canvas.shape[0]-1).astype(np.uint16)
+	# new_particule = np.clip(particule+moves[c], 0, canvas.shape[0]-1).astype(np.uint16)
+	new_particule = np.clip(particule+moves[c], 0, canvas.shape[0]-1) # making vec_2D and all particule array into np.int16 to avoid force conversion
 	return np.where(canvas[(new_particule[:,0], new_particule[:,1])][:,None], new_particule, particule)
 
 
@@ -152,11 +157,13 @@ def draw_particule(size, particule):
 
 def initialize_uniform_particule(canvas, N_per_pos):
 	# 1 particule per canvas positions
-	particule = np.array(np.where(canvas)).T.astype(np.uint16)
+	# particule = np.array(np.where(canvas)).T.astype(np.uint16)
+	particule = np.array(np.where(canvas)).T.astype(np.int16)
 	# count positions
 	N_part = particule.shape[0]
 	# duplicate positions N_per_pos times
-	particule = np.repeat(particule, N_per_pos, axis=0).astype(np.uint16)
+	# particule = np.repeat(particule, N_per_pos, axis=0).astype(np.uint16)
+	particule = np.repeat(particule, N_per_pos, axis=0).astype(np.int16)
 	return particule
 
 
@@ -171,7 +178,8 @@ def perform_MC_2D(canvas, init_position, num_dt, sample_rate, verbose=False):
 	# return a subsampled particules history (every sample_rate timestep)
 	num_samples = int(np.ceil((num_dt+1) / float(sample_rate)))
 	time_history = np.empty((num_samples, ))
-	particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.uint16)
+	# particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.uint16)
+	particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.int16)
 	i_log = 1
 	# init
 	particule_history[0] = init_position
@@ -218,7 +226,8 @@ def perform_MC_2D_2times(canvas, init_position, num_dt, early_thr_dt, sample_rat
 	num_samples_late = int(np.floor((num_dt - early_thr_dt) / float(sample_rate_late)))
 	num_samples = num_samples_early + num_samples_late
 	time_history = np.empty((num_samples, ))
-	particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.uint16)
+	# particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.uint16)
+	particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.int16)
 	i_log = 1
 	# init
 	particule_history[0] = init_position

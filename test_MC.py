@@ -8,10 +8,10 @@ from matplotlib.animation import FuncAnimation
 
 desired_D = 2.0 # um^2/ms
 # desired_D = 0.66 # um^2/ms
-maximum_dx = 0.025 # um
-maximum_dt = 0.01 # ms
+maximum_dx = 0.1 # um
+maximum_dt = 0.05 # ms
 
-# figure out wether dx or dt is the bottle neck
+# figure out weither dx or dt is the bottle neck
 if mc.compute_dt(desired_D, maximum_dx) <= maximum_dt:
     dx = maximum_dx
     dt = mc.compute_dt(desired_D, maximum_dx)
@@ -50,7 +50,7 @@ canvas = mc.canvas_single_circle(radius_pixel, side_pixels=None, center_pixel=No
 # uniform sampling
 # count positions
 N_pos = canvas.sum()
-minimum_N_particule = 10000
+minimum_N_particule = 50000
 # compute number of particule per positions
 N_per_pos = int(np.ceil(minimum_N_particule/float(N_pos)))
 actual_N_particule = N_pos * N_per_pos
@@ -61,16 +61,18 @@ print('{} positions with {} particules each'.format(N_pos, N_per_pos))
 
 # tmp = np.zeros_like(canvas)
 # tmp[canvas.shape[0]//2 - 3:canvas.shape[0]//2 + 3, canvas.shape[1]//2 - 3:canvas.shape[1]//2 + 3] = 1
-# particule = np.array(np.where(tmp)).T.astype(np.uint16)
+## particule = np.array(np.where(tmp)).T.astype(np.uint16)
+# particule = np.array(np.where(tmp)).T.astype(np.int16)
 # N_pos = particule.shape[0]
 # minimum_N_particule = 1000
 # N_per_pos = int(np.ceil(minimum_N_particule/float(N_pos)))
 # actual_N_particule = N_pos * N_per_pos
 # # duplicate positions N_per_pos times
-# init_particule = np.repeat(particule, N_per_pos, axis=0).astype(np.uint16)
+## init_particule = np.repeat(particule, N_per_pos, axis=0).astype(np.uint16)
+# init_particule = np.repeat(particule, N_per_pos, axis=0).astype(np.int16)
 
 # computation num of time steps
-desired_simulation_length = 10 # ms
+desired_simulation_length = 20 # ms
 num_dt = int(np.ceil(desired_simulation_length/float(dt)))
 actual_simulation_length = num_dt*dt
 
@@ -92,7 +94,8 @@ print('timestep resolution = {}'.format(sample_rate))
 print('History size will be ({}, {}, ndim={})'.format(int(np.ceil(num_dt / float(sample_rate))), actual_N_particule,canvas.ndim))
 
 # this is a crucial point, we have to determines if it's too much memory-wise
-# positions use np.uint16 datatype (ergo the 2 in the formula
+## positions use np.uint16 datatype (ergo the 2 in the formula)
+# positions use np.int16 datatype (ergo the 2 in the formula)
 # 2 bytes per value, np.prod(history.shape) values (one for each particules at each logged time times ndim))
 approx_GB_history = (int(np.ceil(num_dt / float(sample_rate))) * actual_N_particule * canvas.ndim * 2 ) / (1024.**3)
 print('History size will be roughly {:.2f} GBytes'.format(approx_GB_history))
@@ -115,66 +118,66 @@ else:
 
 
 
-## gif package
+# ## gif package
 
-# compute the canvas at each logging point
-images = np.zeros((particule_history.shape[0], canvas.shape[0], canvas.shape[1]), dtype=np.uint32)
-for i in range(particule_history.shape[0]):
-    images[i] = mc.draw_particule(canvas.shape[0], particule_history[i])
-
-
-
-datas = images.copy()
-# maxv = datas.max()
-maxv = 2
-fps = 30.
-
-fig = pl.figure(figsize=(8,8))
-im = pl.imshow(np.zeros_like(datas[0]), interpolation='none', vmin=0, vmax=maxv)
-pl.axis('off')
-pl.colorbar()
-
-def animate_func(i):
-    im.set_array(datas[i])
-    return [im]
-
-anim = FuncAnimation(fig, animate_func, frames = range(datas.shape[0]), interval = 1000 / fps, blit = True)
-# anim.save('/home/raid2/paquette/Pictures/discrete_mc/inner/test_circle_4.mp4', fps=fps,  dpi=300)
-pl.show()
+# # compute the canvas at each logging point
+# images = np.zeros((particule_history.shape[0], canvas.shape[0], canvas.shape[1]), dtype=np.uint32)
+# for i in range(particule_history.shape[0]):
+#     images[i] = mc.draw_particule(canvas.shape[0], particule_history[i])
 
 
+
+# datas = images.copy()
+# # maxv = datas.max()
+# maxv = 2
+# fps = 30.
+
+# fig = pl.figure(figsize=(8,8))
+# im = pl.imshow(np.zeros_like(datas[0]), interpolation='none', vmin=0, vmax=maxv)
+# pl.axis('off')
+# pl.colorbar()
+
+# def animate_func(i):
+#     im.set_array(datas[i])
+#     return [im]
+
+# anim = FuncAnimation(fig, animate_func, frames = range(datas.shape[0]), interval = 1000 / fps, blit = True)
+# # anim.save('/home/raid2/paquette/Pictures/discrete_mc/inner/test_circle_4.mp4', fps=fps,  dpi=300)
+# pl.show()
 
 
 
 
-distance_origin = particule_history[1:].astype(np.int16) - particule_history[0].astype(np.int16)
 
 
-sq_dist_x = (distance_origin[:,:,0]*dx)**2
-sq_dist_y = (distance_origin[:,:,1]*dx)**2
-
-sq_dist = np.linalg.norm(distance_origin*dx, axis=2)**2
+# distance_origin = particule_history[1:].astype(np.int16) - particule_history[0].astype(np.int16)
 
 
-MSD_x = sq_dist_x.mean(axis=1)
-MSD_y = sq_dist_y.mean(axis=1)
-MSD = sq_dist.mean(axis=1)
+# sq_dist_x = (distance_origin[:,:,0]*dx)**2
+# sq_dist_y = (distance_origin[:,:,1]*dx)**2
+
+# sq_dist = np.linalg.norm(distance_origin*dx, axis=2)**2
 
 
-pl.figure()
-pl.plot(time_history[1:]*dt, MSD_x, label='MSD x')
-pl.plot(time_history[1:]*dt, MSD_y, label='MSD y')
-pl.plot(time_history[1:]*dt, MSD, label='MSD')
-pl.legend()
-pl.show()
+# MSD_x = sq_dist_x.mean(axis=1)
+# MSD_y = sq_dist_y.mean(axis=1)
+# MSD = sq_dist.mean(axis=1)
 
 
-pl.figure()
-pl.plot(time_history[1:]*dt, MSD_x/(2*time_history[1:]*dt), label='D x')
-pl.plot(time_history[1:]*dt, MSD_y/(2*time_history[1:]*dt), label='D y')
-pl.plot(time_history[1:]*dt, MSD/(2*time_history[1:]*dt), label='D')
-pl.legend()
-pl.show()
+# pl.figure()
+# pl.plot(time_history[1:]*dt, MSD_x, label='MSD x')
+# pl.plot(time_history[1:]*dt, MSD_y, label='MSD y')
+# pl.plot(time_history[1:]*dt, MSD, label='MSD')
+# pl.legend()
+# pl.show()
+
+
+# pl.figure()
+# pl.plot(time_history[1:]*dt, MSD_x/(2*time_history[1:]*dt), label='D x')
+# pl.plot(time_history[1:]*dt, MSD_y/(2*time_history[1:]*dt), label='D y')
+# pl.plot(time_history[1:]*dt, MSD/(2*time_history[1:]*dt), label='D')
+# pl.legend()
+# pl.show()
 
 
 
