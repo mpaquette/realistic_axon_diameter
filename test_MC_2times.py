@@ -8,8 +8,8 @@ from matplotlib.animation import FuncAnimation
 
 desired_D = 2.0 # um^2/ms
 # desired_D = 0.66 # um^2/ms
-maximum_dx = 0.025 # um
-maximum_dt = 0.01 # ms
+maximum_dx = 0.25 # um
+maximum_dt = 0.1 # ms
 
 # figure out wether dx or dt is the bottle neck
 if mc.compute_dt(desired_D, maximum_dx) <= maximum_dt:
@@ -29,7 +29,7 @@ print('dx within limt? {}     {:.2e}  <=  {:.2e}'.format(dx <= maximum_dx, dx, m
 print('dt within limt? {}     {:.2e}  <=  {:.2e}'.format(dt <= maximum_dt, dt, maximum_dt))
 
 
-desired_circle_diameter = 1.0 # um
+desired_circle_diameter = 2.0 # um
 # compute circle radius in canvas pixel
 radius_pixel = int(np.ceil((desired_circle_diameter/2.) / dx))
 # radius_pixel = int(np.floor((circle_diameter/2.) / dx))
@@ -50,7 +50,7 @@ canvas = mc.canvas_single_circle(radius_pixel, side_pixels=None, center_pixel=No
 # uniform sampling
 # count positions
 N_pos = canvas.sum()
-minimum_N_particule = 10000
+minimum_N_particule = 1000
 # compute number of particule per positions
 N_per_pos = int(np.ceil(minimum_N_particule/float(N_pos)))
 init_particule = mc.initialize_uniform_particule(canvas, N_per_pos)
@@ -62,13 +62,15 @@ print('{} positions with {} particules each'.format(N_pos, N_per_pos))
 
 # tmp = np.zeros_like(canvas)
 # tmp[canvas.shape[0]//2 - 3:canvas.shape[0]//2 + 3, canvas.shape[1]//2 - 3:canvas.shape[1]//2 + 3] = 1
-# particule = np.array(np.where(tmp)).T.astype(np.uint16)
+## particule = np.array(np.where(tmp)).T.astype(np.uint16)
+# particule = np.array(np.where(tmp)).T.astype(np.int16)
 # N_pos = particule.shape[0]
 # minimum_N_particule = 1000
 # N_per_pos = int(np.ceil(minimum_N_particule/float(N_pos)))
 # actual_N_particule = N_pos * N_per_pos
 # # duplicate positions N_per_pos times
-# init_particule = np.repeat(particule, N_per_pos, axis=0).astype(np.uint16)
+## init_particule = np.repeat(particule, N_per_pos, axis=0).astype(np.uint16)
+# init_particule = np.repeat(particule, N_per_pos, axis=0).astype(np.int16)
 
 # computation num of time steps
 desired_simulation_length = 10 # ms
@@ -118,7 +120,8 @@ print('History size will be ({}, {}, ndim={})'.format(int(np.ceil(num_dt_early /
 
 
 # this is a crucial point, we have to determines if it's too much memory-wise
-# positions use np.uint16 datatype (ergo the 2 in the formula
+## positions use np.uint16 datatype (ergo the 2 in the formula
+# positions use np.int16 datatype (ergo the 2 in the formula
 # 2 bytes per value, np.prod(history.shape) values (one for each particules at each logged time times ndim))
 approx_GB_history = (int(np.ceil(num_dt_early / float(sample_rate_early)) + np.ceil((num_dt-num_dt_early) / float(sample_rate))) * actual_N_particule * canvas.ndim * 2 ) / (1024.**3)
 print('History size will be roughly {:.2f} GBytes'.format(approx_GB_history))
@@ -173,7 +176,8 @@ print(E_theory)
 
 
 
-relative_position = (particule_history[1:].astype(np.int16) - particule_history[0].astype(np.int16)) * dx # um
+# relative_position = (particule_history[1:].astype(np.int16) - particule_history[0].astype(np.int16)) * dx # um
+relative_position = (particule_history[1:] - particule_history[0]) * dx # um
 
 
 # g_orient = np.array([1., 1])

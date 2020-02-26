@@ -150,7 +150,8 @@ else:
 
 
 
-# distance_origin = particule_history[1:].astype(np.int16) - particule_history[0].astype(np.int16)
+## distance_origin = particule_history[1:].astype(np.int16) - particule_history[0].astype(np.int16)
+# distance_origin = particule_history[1:] - particule_history[0]
 
 
 # sq_dist_x = (distance_origin[:,:,0]*dx)**2

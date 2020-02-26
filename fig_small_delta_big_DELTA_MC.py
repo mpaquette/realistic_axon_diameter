@@ -11,8 +11,8 @@ import vangelderen as vg
 
 desired_D = 2.0 # um^2/ms
 # desired_D = 0.66 # um^2/ms
-maximum_dx = 0.01 # um
-maximum_dt = 0.01 # ms
+maximum_dx = 0.05 # um
+maximum_dt = 0.05 # ms
 
 # figure out wether dx or dt is the bottle neck
 if mc.compute_dt(desired_D, maximum_dx) <= maximum_dt:
@@ -53,7 +53,7 @@ canvas = mc.canvas_single_circle(radius_pixel, side_pixels=None, center_pixel=No
 # uniform sampling
 # count positions
 N_pos = canvas.sum()
-minimum_N_particule = 45000
+minimum_N_particule = 25000
 # compute number of particule per positions
 N_per_pos = int(np.ceil(minimum_N_particule/float(N_pos)))
 init_particule = mc.initialize_uniform_particule(canvas, N_per_pos)
@@ -64,7 +64,7 @@ print('{} positions with {} particules each'.format(N_pos, N_per_pos))
 
 
 # computation num of time steps
-desired_simulation_length = 100 # ms
+desired_simulation_length = 20 # ms
 num_dt = int(np.ceil(desired_simulation_length/float(dt)))
 actual_simulation_length = num_dt*dt
 

@@ -225,7 +225,7 @@ def perform_MC_2D_2times(canvas, init_position, num_dt, early_thr_dt, sample_rat
 	num_samples_early = int(np.ceil((early_thr_dt+1) / float(sample_rate_early)))
 	num_samples_late = int(np.floor((num_dt - early_thr_dt) / float(sample_rate_late)))
 	num_samples = num_samples_early + num_samples_late
-	time_history = np.empty((num_samples, ))
+	time_history = np.empty((num_samples+1, ))
 	# particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.uint16)
 	particule_history = np.empty((num_samples, init_position.shape[0], init_position.shape[1]), dtype=np.int16)
 	i_log = 1

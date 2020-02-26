@@ -126,32 +126,32 @@ for ib,b in enumerate(bs):
 
 
 
-errors = D - fit_data
+# errors = D - fit_data
 
-
-pl.figure()
-# pl.hist(fit_data, 100, alpha=0.5, density=True)
-pl.hist(errors, 100, alpha=0.5, density=True)
-
-
-# samples_from_ln = -np.log(noiseless_data) + (sigma/noiseless_data)*np.random.randn(Ntrial) / b
-samples_from_ln = -(sigma/noiseless_data)*np.random.randn(Ntrial) / b
 
 # pl.figure()
-pl.hist(samples_from_ln, 100, alpha=0.5, density=True)
-
-pl.show()
-
+# # pl.hist(fit_data, 100, alpha=0.5, density=True)
+# pl.hist(errors, 100, alpha=0.5, density=True)
 
 
-# The approximation make sense!
-# Maclaurin serie
-# ln(a - x) = ln(a) - sum_i=1^inf x^k / k*a^k
-# therefore
-# ln(a - x) ~ ln(a) - x/a
-# if x ~ N(0, sigma^2)
-# then (a - x) ~ N(a, sigma^2)
-# and ln(a - x) approx ~ N(ln(a), (sigma/a)^2)
+# # samples_from_ln = -np.log(noiseless_data) + (sigma/noiseless_data)*np.random.randn(Ntrial) / b
+# samples_from_ln = -(sigma/noiseless_data)*np.random.randn(Ntrial) / b
+
+# # pl.figure()
+# pl.hist(samples_from_ln, 100, alpha=0.5, density=True)
+
+# pl.show()
+
+
+
+# # The approximation make sense!
+# # Maclaurin serie
+# # ln(a - x) = ln(a) - sum_i=1^inf x^k / k*a^k
+# # therefore
+# # ln(a - x) ~ ln(a) - x/a
+# # if x ~ N(0, sigma^2)
+# # then (a - x) ~ N(a, sigma^2)
+# # and ln(a - x) approx ~ N(ln(a), (sigma/a)^2)
 
 
 

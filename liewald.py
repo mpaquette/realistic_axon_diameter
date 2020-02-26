@@ -2,6 +2,34 @@ import numpy as np
 import pylab as pl
 
 
+
+
+
+
+def r_eff(counts, diams):
+	# normalize counts
+	normCounts = counts / counts.sum()
+	# # compute areas
+	# areas = np.pi*(diams/2.)**2
+	# compute <r^6>
+	r_mom6 = (normCounts*(diams/2.)**6).sum()
+	# compute <r^2>
+	r_mom2 = (normCounts*(diams/2.)**2).sum()
+	# return r_eff = (<r^6>/<r^2>)^1/4
+	return (r_mom6/r_mom2)**0.25
+
+
+
+
+
+
+
+
+
+
+
+
+
 # data recovered from plots
 data = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_left.csv')
 
@@ -41,6 +69,20 @@ pl.title('Liewald 2014, Fig9, Human Brain 1 - right   a\' = {:.3f}'.format(a_pri
 for i in range(diams.shape[0]):
     pl.bar(diams[i], normCounts[i], 0.05, color='k')
 pl.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
