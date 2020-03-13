@@ -28,6 +28,15 @@ def diameter_intersection(point, values, dico):
 
 	return diameter
 
+# T^-1 s^-1
+gamma = 42.515e6 * 2*np.pi
+def scheme_bval(scheme):
+	# b = (gamma*delta*G)^2 (DELTA - delta/3)
+	# assumes gamma is in T^-1 s^-1, G is in T/m, DELTA/delta are in s
+	b = (gamma*scheme[:,2]*scheme[:,0])**2 * (scheme[:,1] - scheme[:,2]/3.) # s / m^2
+	return b
+
+
 
 # Setup
 
@@ -137,19 +146,56 @@ log[vin] = np.array(logy)
 
 
 
-fins = np.linspace(0.1,1,100)
-pl.figure()
-pl.plot(fins, fins**(-1/4.), linewidth=3)
-pl.xlabel('Intra Axonal Signal Fraction', fontsize=18)
-pl.ylabel('d_min multiplier', fontsize=18)
-pl.title('d_min multiplier as a function of f_in', fontsize=20)
-pl.show()
 
 
 
 
 
 
+
+
+def S_gauss_1D(b, D, S0=1.0):
+	return S0*np.exp(-b*D)
+
+
+
+S0 = 0.3
+bs = [scheme_bval(scheme) for scheme in schemes] 
+
+
+S_gauss_1D(bs[1], D0/2., S0=1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+scheme_1 = np.array([[0.3, 40e-3, 40e-3]])
+# strong ish, normal preclincal scheme, ~Dyrby
+scheme_2 = np.array([[0.15, 10e-3, 10e-3]])
+scheme_names = ['Nilsson', 'Dyrby']
+schemes = [scheme_1, scheme_2]
+
+
+
+
+
+
+
+
+SNRs = [164., 30.]
+fins = [1.0, 0.5]
+
+
+for SNR in SNRs
+for fin in fins:
 
 
 

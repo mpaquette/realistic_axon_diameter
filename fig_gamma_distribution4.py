@@ -16,6 +16,11 @@ from scipy.interpolate import interp1d
 gamma = 42.515e6 * 2*np.pi
 
 
+import matplotlib as mpl
+mpl.rcParams['text.usetex'] = True
+mpl.rcParams['text.latex.preamble'] = r'\usepackage{{amsmath}}\usepackage{{amsfonts}}'
+
+
 
 def vangelderen_cylinder_perp_ln_list(D, R, DELTA, delta, G, m_max=10):
     # returns the scaling factor and the list of each summation component for ln(M(DELTA,delta,G)/M(0))
@@ -390,62 +395,89 @@ theta_b_r = peak_b_r / (k_b_r-1)
 
 
 
+
+
+import matplotlib.ticker as ticker
+def fmt(x, pos):
+    a, b = '{:.0e}'.format(x).split('e')
+    b = int(b)+2
+    return r'${} \times 10^{{{}}}$ \%'.format(a, b)
+
+
+
 # fig = pl.figure()
-gs = gridspec.GridSpec(2, 3)
+gs = gridspec.GridSpec(2, 3, wspace=0.35)
 # gs = gridspec.GridSpec(2, 4)
  
 ax_main = pl.subplot(gs[0:2, 1])
 # ax_main = pl.subplot(gs[0:2, 1:3])
-levels = [0, 0.001, 0.005, 0.01, 0.05, 0.1]
+levels = [0, 0.001, 0.005, 0.01, 0.05]
+# levels = [0, 0.001, 0.005, 0.01, 0.05, 0.1]
 # levels = [0, 0.005, 0.01, 0.05, 0.1, 0.5]
-mycolormap = pl.cm.hsv
-_colors = [mycolormap(i) for i in np.linspace(0, 1, len(levels))]
+# mycolormap = pl.cm.hsv
+# mycolormap = pl.cm.jet
+mycolormap = pl.cm.Blues
+_colors = [mycolormap(i) for i in np.linspace(0, 1, len(levels))][::-1]
 cp = pl.contourf(p_data, k_data, errors, levels, colors=_colors)
-pl.colorbar(cp)
+
+
+cbar = pl.colorbar(cp, format=ticker.FuncFormatter(fmt))
+cbar.ax.tick_params(labelsize=16)
+pl.xticks(fontsize=12)
+pl.yticks(fontsize=12)
+
 ax_main.set_aspect(aspect=1)
 # ax_main.set_title('Error')
-ax_main.set_xlabel('peak (um)')
-ax_main.set_ylabel('k (shape)')
-cc = Circle((peak, k), radius=0.05, color='black')
+ax_main.set_xlabel(r'peak location ($\mu$m)', fontsize=18)
+ax_main.set_ylabel(r'k (shape parameter)', fontsize=18)
+cc = Circle((peak, k), radius=0.05, color='red')
 ax_main.add_patch(cc)
 
 ## GROUND TRUTH
 ax_t_l = pl.subplot(gs[0, 0])
 ds_center_t_l, areas_t_l = get_gamma_binned_pdf(k_t_l, theta_t_l, maxq=qmaxplot, N=Nplot)
 width_t_l = ds_center_t_l[2] - ds_center_t_l[1]
-ax_t_l.bar(ds_center_t_l, areas_t_l/width_t_l, width_t_l)
-ax_t_l.set_title('Gamma({:.2f}, {:.2f})  (peak = {:.2f})  (error = {:.2f} %)'.format(k_t_l, theta_t_l, peak_t_l, 100*errors[list(np.round(krange, 3)).index(k_t_l), list(np.round(peakrange, 3)).index(peak_t_l)]))
+ax_t_l.bar(ds_center_t_l, areas_t_l/width_t_l, width_t_l, color=_colors[0], alpha=0.3)
+ax_t_l.plot(ds_center_t_l, areas_t_l/width_t_l, color=_colors[0], linewidth=3)
+ax_t_l.set_title(r'$\Gamma$({:.2f}, {:.2f})  (peak = {:.2f} $\mu$m)  (error = {:.2f} \%)'.format(k_t_l, theta_t_l, peak_t_l, 100*errors[list(np.round(krange, 3)).index(k_t_l), list(np.round(peakrange, 3)).index(peak_t_l)]), fontsize=14)
 ax_t_l.set_xlim(0, xmaxplot)
 ax_t_l.set_ylim(0, ymaxplot)
+pl.xticks(fontsize=12)
 
 
 ## MID K
 ax_b_l = pl.subplot(gs[1, 0])
 ds_center_b_l, areas_b_l = get_gamma_binned_pdf(k_b_l, theta_b_l, maxq=qmaxplot, N=Nplot)
 width_b_l = ds_center_b_l[2] - ds_center_b_l[1]
-ax_b_l.bar(ds_center_b_l, areas_b_l/width_b_l, width_b_l)
-ax_b_l.set_title('Gamma({:.2f}, {:.2f})  (peak = {:.2f})  (error = {:.2f} %)'.format(k_b_l, theta_b_l, peak_b_l, 100*errors[list(np.round(krange, 3)).index(k_b_l), list(np.round(peakrange, 3)).index(peak_b_l)]))
+ax_b_l.bar(ds_center_b_l, areas_b_l/width_b_l, width_b_l, color=_colors[0], alpha=0.3)
+ax_b_l.plot(ds_center_b_l, areas_b_l/width_b_l, color=_colors[0], linewidth=3)
+ax_b_l.set_title(r'$\Gamma$({:.2f}, {:.2f})  (peak = {:.2f} $\mu$m)  (error = {:.2f} \%)'.format(k_b_l, theta_b_l, peak_b_l, 100*errors[list(np.round(krange, 3)).index(k_b_l), list(np.round(peakrange, 3)).index(peak_b_l)]), fontsize=14)
 ax_b_l.set_xlim(0, xmaxplot)
 ax_b_l.set_ylim(0, ymaxplot)
+pl.xticks(fontsize=12)
 
 ## MAX K
 ax_t_r = pl.subplot(gs[0, 2])
 ds_center_t_r, areas_t_r = get_gamma_binned_pdf(k_t_r, theta_t_r, maxq=qmaxplot, N=Nplot)
 width_t_r = ds_center_t_r[2] - ds_center_t_r[1]
-ax_t_r.bar(ds_center_t_r, areas_t_r/width_t_r, width_t_r)
-ax_t_r.set_title('Gamma({:.2f}, {:.2f})  (peak = {:.2f})  (error = {:.2f} %)'.format(k_t_r, theta_t_r, peak_t_r, 100*errors[list(np.round(krange, 3)).index(k_t_r), list(np.round(peakrange, 3)).index(peak_t_r)]))
+ax_t_r.bar(ds_center_t_r, areas_t_r/width_t_r, width_t_r, color=_colors[0], alpha=0.3)
+ax_t_r.plot(ds_center_t_r, areas_t_r/width_t_r, color=_colors[0], linewidth=3)
+ax_t_r.set_title(r'$\Gamma$({:.2f}, {:.2f})  (peak = {:.2f} $\mu$m)  (error = {:.2f} \%)'.format(k_t_r, theta_t_r, peak_t_r, 100*errors[list(np.round(krange, 3)).index(k_t_r), list(np.round(peakrange, 3)).index(peak_t_r)]), fontsize=14)
 ax_t_r.set_xlim(0, xmaxplot)
 ax_t_r.set_ylim(0, ymaxplot)
+pl.xticks(fontsize=12)
 
 
 ## BIG K
 ax_b_r = pl.subplot(gs[1, 2])
 ds_center_b_r, areas_b_r = get_gamma_binned_pdf(k_b_r, theta_b_r, maxq=qmaxplot, N=Nplot)
 width_b_r = ds_center_b_r[2] - ds_center_b_r[1]
-ax_b_r.bar(ds_center_b_r, areas_b_r/width_b_r, width_b_r)
-ax_b_r.set_title('Gamma({:.2f}, {:.2f})  (peak = {:.2f})  (error = {:.2f} %)'.format(k_b_r, theta_b_r, peak_b_r, 100*errors[list(np.round(krange, 3)).index(k_b_r), list(np.round(peakrange, 3)).index(peak_b_r)]))
+ax_b_r.bar(ds_center_b_r, areas_b_r/width_b_r, width_b_r, color=_colors[0], alpha=0.3)
+ax_b_r.plot(ds_center_b_r, areas_b_r/width_b_r, color=_colors[0], linewidth=3)
+ax_b_r.set_title(r'$\Gamma$({:.2f}, {:.2f})  (peak = {:.2f} $\mu$m)  (error = {:.2f} \%)'.format(k_b_r, theta_b_r, peak_b_r, 100*errors[list(np.round(krange, 3)).index(k_b_r), list(np.round(peakrange, 3)).index(peak_b_r)]), fontsize=14, color='red')
 ax_b_r.set_xlim(0, xmaxplot)
 ax_b_r.set_ylim(0, ymaxplot)
+pl.xticks(fontsize=12)
 
 
 
@@ -470,14 +502,14 @@ xyB_b_r_1 = (0, ymaxplot)
 xyB_b_r_2 = (0, 0)
 
 
-con_t_l_1 = ConnectionPatch(xyA=xyA_t_l, xyB=xyB_t_l_1, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_t_l, color="black", lw=2, alpha=0.3)
-con_t_l_2 = ConnectionPatch(xyA=xyA_t_l, xyB=xyB_t_l_2, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_t_l, color="black", lw=2, alpha=0.3)
-con_b_l_1 = ConnectionPatch(xyA=xyA_b_l, xyB=xyB_b_l_1, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_b_l, color="black", lw=2, alpha=0.3)
-con_b_l_2 = ConnectionPatch(xyA=xyA_b_l, xyB=xyB_b_l_2, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_b_l, color="black", lw=2, alpha=0.3)
-con_t_r_1 = ConnectionPatch(xyA=xyA_t_r, xyB=xyB_t_r_1, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_t_r, color="black", lw=2, alpha=0.3)
-con_t_r_2 = ConnectionPatch(xyA=xyA_t_r, xyB=xyB_t_r_2, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_t_r, color="black", lw=2, alpha=0.3)
-con_b_r_1 = ConnectionPatch(xyA=xyA_b_r, xyB=xyB_b_r_1, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_b_r, color="black", lw=2, alpha=0.3)
-con_b_r_2 = ConnectionPatch(xyA=xyA_b_r, xyB=xyB_b_r_2, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_b_r, color="black", lw=2, alpha=0.3)
+con_t_l_1 = ConnectionPatch(xyA=xyA_t_l, xyB=xyB_t_l_1, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_t_l, color="black", lw=2, alpha=0.3, linestyle='--')
+con_t_l_2 = ConnectionPatch(xyA=xyA_t_l, xyB=xyB_t_l_2, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_t_l, color="black", lw=2, alpha=0.3, linestyle='--')
+con_b_l_1 = ConnectionPatch(xyA=xyA_b_l, xyB=xyB_b_l_1, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_b_l, color="black", lw=2, alpha=0.3, linestyle='--')
+con_b_l_2 = ConnectionPatch(xyA=xyA_b_l, xyB=xyB_b_l_2, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_b_l, color="black", lw=2, alpha=0.3, linestyle='--')
+con_t_r_1 = ConnectionPatch(xyA=xyA_t_r, xyB=xyB_t_r_1, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_t_r, color="black", lw=2, alpha=0.3, linestyle='--')
+con_t_r_2 = ConnectionPatch(xyA=xyA_t_r, xyB=xyB_t_r_2, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_t_r, color="black", lw=2, alpha=0.3, linestyle='--')
+con_b_r_1 = ConnectionPatch(xyA=xyA_b_r, xyB=xyB_b_r_1, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_b_r, color="black", lw=2, alpha=0.3, linestyle='--')
+con_b_r_2 = ConnectionPatch(xyA=xyA_b_r, xyB=xyB_b_r_2, coordsA="data", coordsB="data", axesA=ax_main, axesB=ax_b_r, color="black", lw=2, alpha=0.3, linestyle='--')
 
 ax_main.add_artist(con_t_l_1)
 ax_main.add_artist(con_t_l_2)
@@ -493,11 +525,10 @@ pl.show()
 
 
 
-
-
-
-
-
+# pl.figure()
+# pl.contour(p_data, k_data, errors, levels, colors='black')
+# pl.imshow(np.log(errors), origin='lower', extent=[peakrange.min(), peakrange.max(), krange.min(), krange.max()], cmap=pl.cm.Blues_r)
+# pl.show()
 
 
 

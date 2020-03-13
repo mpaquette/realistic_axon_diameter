@@ -25,14 +25,15 @@ D0 = 2e-9
 # D0 = 0.66e-9
 # most sensitive Connectom-like scheme
 scheme_connectom = np.array([[0.3, 40e-3, 40e-3]])
+# scheme_connectom = np.array([[0.3, 40e-3, 40e-3]], dtype=np.complex)
 # scheme_connectom = np.array([[1.5, 40e-3, 40e-3]])
 # alpha significance level
 # alpha = 0.01
 # alphas = np.array([0.001, 0.01, 0.05])
 alphas = np.array([0.01])
 # data SNR at B0
-# SNR = 30.0
-SNR = 300
+SNR = 30.0
+# SNR = 300
 
 #  T^-1 s^-1
 gamma = 42.515e6 * 2*np.pi
@@ -57,7 +58,10 @@ diams = np.arange(0.1, 5.1, 0.05)*1e-6
 Ntrial = 10000
 
 
-fit_data = np.zeros((len(diams), Ntrial))
+np.random.seed(0) 
+
+# fit_data = np.zeros((len(diams), Ntrial))
+fit_data = np.zeros((len(diams), Ntrial), dtype=np.complex)
 
 for idiam, diam in enumerate(diams):
 	# noiseless_signal = vg.vangelderen_cylinder_perp(D0, 0.5*diam, scheme_connectom, m_max=10)
@@ -66,11 +70,17 @@ for idiam, diam in enumerate(diams):
 	print('D = {:.2f}   Fit = {:.2f}'.format(1e6*diam, 1e6*noiseless_fit))
 	for itrial in range(Ntrial):
 		noise = (1/float(SNR))*np.random.randn()
-		noisy_fit = nilsson_diameter(noiseless_signal+noise, D0, scheme_connectom[0,2], scheme_connectom[0,0])
+		# noisy_fit = nilsson_diameter(noiseless_signal+noise, D0, scheme_connectom[0,2], scheme_connectom[0,0])
+		noisy_fit = nilsson_diameter(noiseless_signal+noise, D0, complex(scheme_connectom[0,2]), complex(scheme_connectom[0,0]))
 		fit_data[idiam, itrial] = noisy_fit
 
-fit_data[np.isnan(fit_data)] = 0
+# fit_data[np.isnan(fit_data)] = 0
 
+
+rejectCount = (np.abs(np.imag(fit_data)) > 0).sum(axis=1)
+# fit_data = np.abs(fit_data)
+fit_data = np.real(fit_data)
+# fit_data = np.imag(fit_data)
 
 
 
@@ -222,6 +232,11 @@ for i in range(fit_data.shape[0]):
 
 
 
+## INSET ME LOWER RIGHT
+pl.figure()
+pl.plot(diams*1e6, 100*rejectCount/Ntrial)
+pl.xlabel(r'Diameters ($\mu$m)', fontsize=20)
+pl.ylabel(r'Rejection \%', fontsize=20)
 
 
 
@@ -249,8 +264,8 @@ pl.plot(diams*1e6, diams*1e6, color='black', linestyle='--')
 # color1=next(_colors)
 color1='blue'
 # pl.plot(diams*1e6, lower_diams_mean*1e6, color=color1, linewidth=3, label=r'{:.0f}\% Confidence Interval'.format(100*interval))
-idx_trunc = np.where(lower_diams_mean > 0)[0][0]
-pl.plot(diams[idx_trunc-1:]*1e6, lower_diams_mean[idx_trunc-1:]*1e6, color=color1, linewidth=3, label=r'{:.0f}\% Confidence Interval (mean)'.format(100*interval))
+idx_trunc = max(np.where(lower_diams_mean > 0)[0][0] - 1, 0)
+pl.plot(diams[idx_trunc:]*1e6, lower_diams_mean[idx_trunc:]*1e6, color=color1, linewidth=3, label=r'{:.0f}\% Confidence Interval (mean)'.format(100*interval))
 pl.plot(diams*1e6, upper_diams_mean*1e6, color=color1, linewidth=3)
 
 # pl.plot(diams*1e6, bayes_mean_stat*1e6, color=next(_colors), linewidth=2, label=r'Mean $d_{{\text{{fit}}}}$')
