@@ -25,6 +25,14 @@ S_vg = np.array([vg.vangelderen_cylinder_perp(D0, 0.5*d, np.array([[GMAX, Delta*
 
 
 
+# for vizualisation, I manually set a common dmax and pmax
+dmax=3.7
+pmax=0.225
+
+
+
+
+
 def estimate_diameter_from_dict(value, dico_signal=S_vg, dico_radius=d_dict):
 	# assume dico_signal is sorted ascending
 	# return linear interpolated radius
@@ -64,7 +72,8 @@ def d_mean_V(counts, diams):
 
 # Liewald diameter data
 # data recovered from plots
-data = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_left.csv')
+# data = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_left.csv')
+data = np.genfromtxt('/data/tu_paquette/myDownloads/Liewald_2014_fig9_Human_brain_1_left.csv')
 
 # the bin center are known so we can correct
 diams = np.round(data[:,0], 1)
@@ -89,7 +98,7 @@ d_fitted = estimate_diameter_from_dict(signal)
 
 
 
-pl.figure(figsize=(10, 5))
+pl.figure(figsize=(10, 6))
 mycolormap = pl.cm.hsv
 n = 3 + 1
 _colors = (mycolormap(i) for i in np.linspace(0, 1, n))
@@ -100,11 +109,13 @@ pl.axvline(d_fitted*1e6, label=r'$d_{{\text{{fit}}}}$ = {:.2f} $\mu$m'.format(d_
 pl.axvline(2*reff*1e6, label=r'$d_{{\text{{eff}}}}$ = {:.2f} $\mu$m'.format(2*reff*1e6), color=next(_colors), linewidth=4, linestyle='--')
 # pl.axvline(meanD_vol, label=r'vol W mean D = {:.2f} $\mu$m'.format(meanD_vol), color=next(_colors), linewidth=4)
 pl.axvline(meanD, label=r'$d_{{\text{{mean}}}}$ = {:.2f} $\mu$m'.format(meanD), color=next(_colors), linewidth=4)
-pl.legend(fontsize=18)
-pl.xlabel(r'Diameters ($\mu$m)', fontsize=16)
-pl.ylabel(r'Normalized Axon Counts', fontsize=16)
-pl.xticks(fontsize=14)
-pl.yticks(fontsize=14)
+pl.legend(fontsize=20)
+pl.xlabel(r'Diameters ($\mu$m)', fontsize=18)
+pl.ylabel(r'Normalized Axon Counts', fontsize=18)
+pl.xticks(fontsize=16)
+pl.yticks(fontsize=16)
+pl.xlim(0, dmax)
+pl.ylim(0, pmax)
 pl.show()
 
 
@@ -113,7 +124,8 @@ pl.show()
 
 # Liewald diameter data
 # data recovered from plots
-data = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_right.csv')
+# data = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_right.csv')
+data = np.genfromtxt('/data/tu_paquette/myDownloads/Liewald_2014_fig9_Human_brain_1_right.csv')
 
 # the bin center are known so we can correct
 diams = np.round(data[:,0], 1)
@@ -138,7 +150,7 @@ d_fitted = estimate_diameter_from_dict(signal)
 
 
 
-pl.figure(figsize=(10, 5))
+pl.figure(figsize=(10, 6))
 mycolormap = pl.cm.hsv
 n = 3 + 1
 _colors = (mycolormap(i) for i in np.linspace(0, 1, n))
@@ -149,11 +161,13 @@ pl.axvline(d_fitted*1e6, label=r'$d_{{\text{{fit}}}}$ = {:.2f} $\mu$m'.format(d_
 pl.axvline(2*reff*1e6, label=r'$d_{{\text{{eff}}}}$ = {:.2f} $\mu$m'.format(2*reff*1e6), color=next(_colors), linewidth=4, linestyle='--')
 # pl.axvline(meanD_vol, label=r'vol W mean D = {:.2f} $\mu$m'.format(meanD_vol), color=next(_colors), linewidth=4)
 pl.axvline(meanD, label=r'$d_{{\text{{mean}}}}$ = {:.2f} $\mu$m'.format(meanD), color=next(_colors), linewidth=4)
-pl.legend(fontsize=18)
-pl.xlabel(r'Diameters ($\mu$m)', fontsize=16)
-pl.ylabel(r'Normalized Axon Counts', fontsize=16)
-pl.xticks(fontsize=14)
-pl.yticks(fontsize=14)
+pl.legend(fontsize=20)
+pl.xlabel(r'Diameters ($\mu$m)', fontsize=18)
+pl.ylabel(r'Normalized Axon Counts', fontsize=18)
+pl.xticks(fontsize=16)
+pl.yticks(fontsize=16)
+pl.xlim(0, dmax)
+pl.ylim(0, pmax)
 pl.show()
 
 

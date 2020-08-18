@@ -2,6 +2,11 @@ import numpy as np
 import scipy.stats as ss
 import pylab as pl
 
+
+FILL_DIST = True
+FILL_ALPHA = 0.2
+
+
 # from matplotlib import animation, rc
 from scipy.optimize import root_scalar
 
@@ -175,8 +180,10 @@ for target_r_eff in _target_r_eff:
 
 # Liewald diameter data
 # data recovered from plots
-data_left = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_left.csv')
-data_right = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_right.csv')
+# data_left = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_left.csv')
+data_left = np.genfromtxt('/data/tu_paquette/myDownloads/Liewald_2014_fig9_Human_brain_1_left.csv')
+# data_right = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_right.csv')
+data_right = np.genfromtxt('/data/tu_paquette/myDownloads/Liewald_2014_fig9_Human_brain_1_right.csv')
 
 # the bin center are known so we can correct
 diams_left = np.round(data_left[:,0], 1)
@@ -198,7 +205,7 @@ xs = [4, 2]
 ys = [2, 4]
 for i in range(len(_target_r_eff)):
 
-    fig, ax = pl.subplots(figsize=(10, 5))
+    fig, ax = pl.subplots(figsize=(12, 7))
 
     qmin = 0.001 # min quantile
     qmax = 0.999 # max quantile
@@ -208,19 +215,20 @@ for i in range(len(_target_r_eff)):
 #     ax.set_ylim((0, 3))
     ax.set_ylim((0, ys[i]))
 
-    line_gamma1, = ax.plot([], [], lw=2, label='gamma; peak = 1')
-    line_gamma2, = ax.plot([], [], lw=2, label='gamma; peak = 0.5')
-    line_normal1, = ax.plot([], [], lw=2, label='normal; sigma = 0.2')
-#     line_normal2, = ax.plot([], [], lw=2, label='normal2')
-    line_uniform, = ax.plot([], [], lw=2, label='uniform')
-    line_exp, = ax.plot([], [], lw=2, label='exponential')
+    line_gamma1, = ax.plot([], [], lw=3, label='gamma; peak = 1')
+    line_gamma2, = ax.plot([], [], lw=3, label='gamma; peak = 0.5')
+    line_normal1, = ax.plot([], [], lw=3, label='normal; sigma = 0.2')
+#     line_normal2, = ax.plot([], [], lw=3, label='normal2')
+    line_uniform, = ax.plot([], [], lw=3, label='uniform')
+    line_exp, = ax.plot([], [], lw=3, label='exponential')
 #     reff_text = ax.text(3.7, 1.6, '', fontsize=12)
-    reff_text = ax.text(xs[i]*0.75, ys[i]*0.5, '', fontsize=16)
+    reff_text = ax.text(xs[i]*0.75, ys[i]*0.5, '', fontsize=18)
     
-    pl.legend(loc=1, fontsize=16)
-    pl.title('Density of distributions of equal $d_{eff} = 2r_{eff}$', fontsize=20)
+    pl.legend(loc=1, fontsize=18)
+    # pl.title('Density of distributions of equal $d_{eff} = 2r_{eff}$', fontsize=20)
     pl.xlabel('Diameters ($\mu$m)', fontsize=18)
-    pl.xticks(fontsize=14)
+    pl.xticks(fontsize=16)
+    pl.yticks(fontsize=16)
 
     # gamma1
     k_gamma1 = krange_gamma1[i]
@@ -232,6 +240,8 @@ for i in range(len(_target_r_eff)):
     pdf = rv.pdf(rs) # density at those r
     #     pl.plot(rs, pdf, label='gamma')
     line_gamma1.set_data(rs, pdf)
+    if FILL_DIST:
+        pl.fill_between(rs, np.zeros_like(pdf), pdf, color=line_gamma1.get_color(), alpha=FILL_ALPHA)
     
     # gamma2
     k_gamma2 = krange_gamma2[i]
@@ -243,7 +253,9 @@ for i in range(len(_target_r_eff)):
     pdf = rv.pdf(rs) # density at those r
     #     pl.plot(rs, pdf, label='gamma')
     line_gamma2.set_data(rs, pdf)
-
+    if FILL_DIST:
+        pl.fill_between(rs, np.zeros_like(pdf), pdf, color=line_gamma2.get_color(), alpha=FILL_ALPHA)
+    
     # normal1
     mu_normal1 = murange_normal1[i]
     sigma_normal1 = sigmarange_normal1[i]
@@ -254,7 +266,9 @@ for i in range(len(_target_r_eff)):
     pdf = rv.pdf(rs) # density at those r
     #     pl.plot(rs, pdf, label='normal')
     line_normal1.set_data(rs, pdf)
-
+    if FILL_DIST:
+        pl.fill_between(rs, np.zeros_like(pdf), pdf, color=line_normal1.get_color(), alpha=FILL_ALPHA)
+    
 #     # normal2
 #     mu_normal2 = murange_normal2[i]
 #     sigma_normal2 = sigmarange_normal2[i]
@@ -276,7 +290,9 @@ for i in range(len(_target_r_eff)):
     pdf = rv.pdf(rs) # density at those r
     #     pl.plot(rs, pdf, label='gamma')
     line_uniform.set_data(rs, pdf)
-
+    if FILL_DIST:
+        pl.fill_between(rs, np.zeros_like(pdf), pdf, color=line_uniform.get_color(), alpha=FILL_ALPHA)
+    
     # uniform
     lamb_exp = lambrange_exp[i]
     rv = ss.expon(loc=0, scale=1/lamb_exp) # define random variable
@@ -286,7 +302,9 @@ for i in range(len(_target_r_eff)):
     pdf = rv.pdf(rs) # density at those r
     #     pl.plot(rs, pdf, label='gamma')
     line_exp.set_data(rs, pdf)
-
+    if FILL_DIST:
+        pl.fill_between(rs, np.zeros_like(pdf), pdf, color=line_exp.get_color(), alpha=FILL_ALPHA)
+    
     reff_text.set_text('$d_{{eff}}$ = {:.2f} $\mu$m'.format(_target_r_eff[i]))
 
     # pl.figure()

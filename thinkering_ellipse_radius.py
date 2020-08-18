@@ -28,7 +28,7 @@ for i in range(100):
     a = 10*np.random.rand()
     b = np.random.rand()*a
     # anal = anal_r2(a,b)
-    anal = (2*a/np.pi)*E2(1-(b**2/a**2))
+    anal = (2*a/np.pi)*E2(1-(b**2/a**2)) # this is the true solution
     num = r2(a,b,t)
     # mean_r2[(a,b)] = num.mean()
     mean_r[(a,b)] = np.sqrt(num).mean()

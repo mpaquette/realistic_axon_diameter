@@ -31,7 +31,8 @@ def r_eff(counts, diams):
 
 
 # data recovered from plots
-data = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_left.csv')
+# data = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_left.csv')
+data = np.genfromtxt('/data/tu_paquette/myDownloads/Liewald_2014_fig9_Human_brain_1_left.csv')
 
 # the bin center are known so we can correct
 diams = np.round(data[:,0], 1)
@@ -51,7 +52,8 @@ for i in range(diams.shape[0]):
 pl.show()
 
 # data recovered from plots
-data = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_right.csv')
+# data = np.genfromtxt('/home/raid2/paquette/Downloads/Liewald_2014_fig9_Human_brain_1_right.csv')
+data = np.genfromtxt('/data/tu_paquette/myDownloads/Liewald_2014_fig9_Human_brain_1_right.csv')
 
 # the bin center are known so we can correct
 diams = np.round(data[:,0], 1)

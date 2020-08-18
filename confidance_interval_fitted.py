@@ -30,10 +30,10 @@ scheme_connectom = np.array([[0.3, 40e-3, 40e-3]])
 # alpha significance level
 # alpha = 0.01
 # alphas = np.array([0.001, 0.01, 0.05])
-alphas = np.array([0.01])
+alphas = np.array([0.05])
 # data SNR at B0
-SNR = 30.0
-# SNR = 300
+# SNR = 30.0
+SNR = 300.0
 
 #  T^-1 s^-1
 gamma = 42.515e6 * 2*np.pi
@@ -143,7 +143,7 @@ bayes_std_stat_max = np.array([s[2].minmax[1] for s in bcv])
 
 
 
-interval = 0.8
+# interval = 0.8
 
 # ## estimating data peak to get a left and right side X% interval
 # smooth_diam = np.linspace(0, fit_data.max()*1.01, 10000)
@@ -232,11 +232,11 @@ for i in range(fit_data.shape[0]):
 
 
 
-## INSET ME LOWER RIGHT
-pl.figure()
-pl.plot(diams*1e6, 100*rejectCount/Ntrial)
-pl.xlabel(r'Diameters ($\mu$m)', fontsize=20)
-pl.ylabel(r'Rejection \%', fontsize=20)
+# ## INSET ME LOWER RIGHT
+# pl.figure()
+# pl.plot(diams*1e6, 100*rejectCount/Ntrial)
+# pl.xlabel(r'Diameters ($\mu$m)', fontsize=20)
+# pl.ylabel(r'Rejection \%', fontsize=20)
 
 
 
@@ -251,7 +251,7 @@ _colors = (mycolormap(i) for i in np.linspace(0, 1, n))
 # pl.scatter(np.repeat(diams, Ntrial)*1e6, fit_data.ravel()*1e6, color=next(_colors), alpha=0.01, edgecolors="none")
 # pl.scatter(np.repeat(diams, Ntrial)*1e6, fit_data.ravel()*1e6, color='red', alpha=0.01, edgecolors="none")
 # adding left right jitter
-jitter_intensity = 0.25
+jitter_intensity = 0.5
 step = (diams[1:] - diams[:-1]).mean()
 jitter = (0.5-np.random.rand(Ntrial*diams.shape[0]))*step*jitter_intensity
 pl.scatter((np.repeat(diams, Ntrial)+jitter)*1e6, fit_data.ravel()*1e6, color='red', alpha=0.01, edgecolors="none")
@@ -265,33 +265,35 @@ pl.plot(diams*1e6, diams*1e6, color='black', linestyle='--')
 color1='blue'
 # pl.plot(diams*1e6, lower_diams_mean*1e6, color=color1, linewidth=3, label=r'{:.0f}\% Confidence Interval'.format(100*interval))
 idx_trunc = max(np.where(lower_diams_mean > 0)[0][0] - 1, 0)
-pl.plot(diams[idx_trunc:]*1e6, lower_diams_mean[idx_trunc:]*1e6, color=color1, linewidth=3, label=r'{:.0f}\% Confidence Interval (mean)'.format(100*interval))
-pl.plot(diams*1e6, upper_diams_mean*1e6, color=color1, linewidth=3)
+pl.plot(diams[idx_trunc:]*1e6, lower_diams_mean[idx_trunc:]*1e6, color=color1, linewidth=4, label=r'{:.0f}\% Confidence Interval (mean)'.format(100*interval))
+pl.plot(diams*1e6, upper_diams_mean*1e6, color=color1, linewidth=4)
 
 # pl.plot(diams*1e6, bayes_mean_stat*1e6, color=next(_colors), linewidth=2, label=r'Mean $d_{{\text{{fit}}}}$')
 # pl.plot(diams*1e6, bayes_mean_stat*1e6, color='lime', linewidth=2, label=r'Mean $d_{{\text{{fit}}}}$')
-pl.plot(diams*1e6, bayes_mean_stat*1e6, color='lime', linewidth=2)
+pl.plot(diams*1e6, bayes_mean_stat*1e6, color='lime', linewidth=4)
 
 
 for d_i, d_min in enumerate(d_mins):
 	# pl.axvline(d_min*1e6, color=next(_colors), label=r'$d_{{\min}}$ = {:.2f} $\mu$m ({:.1f} \% decay with $\alpha$ = {})'.format(d_min*1e6, 100*sigmabs[d_i], alphas[d_i]))
-	pl.axvline(d_min*1e6, color='fuchsia', label=r'$d_{{\min}}$ = {:.2f} $\mu$m ({:.1f} \% decay with $\alpha$ = {})'.format(d_min*1e6, 100*sigmabs[d_i], alphas[d_i]), linewidth=2)
+	pl.axvline(d_min*1e6, color='fuchsia', label=r'$d_{{\min}}$ = {:.2f} $\mu$m ({:.1f} \% decay with $\alpha$ = {})'.format(d_min*1e6, 100*sigmabs[d_i], alphas[d_i]), linewidth=3)
 
 
 pl.xlim([0, 1.05*np.max(diams)*1e6])
 pl.ylim([0, 1.05*np.max(diams)*1e6])
 
-pl.xlabel(r'True diameters ($\mu$m)', fontsize=20)
-pl.ylabel(r'Fitted diameters ($\mu$m)', fontsize=20)
+pl.xlabel(r'True diameters ($\mu$m)', fontsize=24)
+pl.ylabel(r'Fitted diameters ($\mu$m)', fontsize=24)
 
 pl.xticks(fontsize=16)
 pl.yticks(fontsize=16)
 
 pl.gca().set_aspect('equal')
 
-pl.legend(loc=2, fontsize=18)
+pl.legend(loc=2, fontsize=22)
 
-pl.title('SNR = {:.0f}'.format(SNR), fontsize=20)
+pl.text(3.5, 1.0, 'SNR = {:.0f}'.format(SNR), fontsize=22)
+
+# pl.title('SNR = {:.0f}'.format(SNR), fontsize=20)
 
 pl.show()
 
