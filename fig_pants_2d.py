@@ -49,15 +49,57 @@ acq = np.array([[300e-3, 30e-3, 50e-3],
                 [300e-3, 50e-3, 50e-3]])
 
 
+
+
+
+
+
+
+
+
+# Test signal
+
+# BIG / IN-vivo
+D = 2.0e-9
+RR1 = 0.5*4.5e-6
+RR2 = 0.5*3.5e-6
+ff1 = 0.3
+
+# # MEDIUM / IN-vivo
 # D = 2.0e-9
-D = 0.66e-9
+# RR1 = 0.5*3.5e-6
+# RR2 = 0.5*2.5e-6
+# ff1 = 0.3
+
+# # SMALL / IN-vivo
+# D = 2.0e-9
+# RR1 = 0.5*2.5e-6
+# RR2 = 0.5*1.5e-6
+# ff1 = 0.3
+
+# # MEDIUM / EX-vivo
+# D = 0.66e-9
+# RR1 = 0.5*2.5e-6
+# RR2 = 0.5*1.5e-6
+# ff1 = 0.3
 
 
-min_R = 0.05e-6/2.
+
+
+
+
+
+
+
+
+
+# min_R = 0.05e-6/2.
+min_R = 0.025e-6/2.
 max_R = 6.0e-6/2.
 # Rs = np.linspace(min_R, max_R, 120, endpoint=True)
 # Rs = np.linspace(min_R, max_R, 239, endpoint=True)
-Rs = np.linspace(min_R, max_R, 596, endpoint=True)
+# Rs = np.linspace(min_R, max_R, 596, endpoint=True)
+Rs = np.linspace(min_R, max_R, 1196, endpoint=True)
 
 # generate Radius dictionary
 signals = []
@@ -76,6 +118,8 @@ for R in Rs:
 # the default error function is too generous because it scale down with multiple times (because of mean and sensitivity skewness)
 # def compute_2d_slice_dico_diff(S, dico, f1, errorfunc=lambda S,gt: np.sum((S-gt)**2)/np.sum(gt**2)):
 def compute_2d_slice_dico_diff(S, dico, f1, errorfunc=lambda S,gt: np.sum(np.abs(S-gt))/3):
+# def compute_2d_slice_dico_diff(S, dico, f1, errorfunc=lambda S,gt: np.min(np.abs(S-gt))):
+# def compute_2d_slice_dico_diff(S, dico, f1, errorfunc=lambda S,gt: np.max(np.abs(S-gt))):
     err1 = []
     for dico_S1 in dico:
         err2 = []
@@ -97,10 +141,6 @@ fs = np.linspace(min_f, max_f, x1*x2, endpoint=True)
 
 
 
-# Test signal
-RR1 = 0.5*3.5e-6
-RR2 = 0.5*2.5e-6
-ff1 = 0.3
 
 S1 = vangelderen_cylinder_perp_acq(D, RR1, acq)
 S2 = vangelderen_cylinder_perp_acq(D, RR2, acq)
@@ -214,12 +254,77 @@ Deff = 2*reff_f(ff1, RR1, 1-ff1, RR2)
 # pl.show()
 
 
+# import matplotlib.ticker as ticker
+# def fmt(x, pos):
+#     a, b = '{:.0e}'.format(x).split('e')
+#     b = int(b)+2
+#     return r'${} \times 10^{{{}}}$ \%'.format(a, b)
+
+
+
+
+# levels = [0, 0.001, 0.005, 0.01, 0.05]
+# # mycolormap = pl.cm.hsv
+# mycolormap = pl.cm.jet
+# # mycolormap = pl.cm.plasma
+# # mycolormap = pl.cm.viridis
+# _colors = [mycolormap(i) for i in np.linspace(0, 1, len(levels))]
+
+# pl.figure(figsize=(14,12))
+
+# pl.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.05, hspace=0.5)
+# for i,f in enumerate(fs):
+#     pl.subplot(x1,x2,i+1)
+#     cp = pl.contourf(Rs*2e6, Rs*2e6, err_S[i], levels, colors=_colors)
+#     cbar = pl.colorbar(cp, format=ticker.FuncFormatter(fmt))
+#     # cbar = pl.colorbar(cp, format=ticker.FuncFormatter(fmt))
+#     # cbar.ax.tick_params(labelsize=textfs)
+
+#     cc_deff = Circle((Deff*1e6, Deff*1e6), radius=0.10, color='black')
+#     pl.gca().add_patch(cc_deff)
+
+#     if np.abs(f-ff1)<0.01:
+#         cc_gt = Circle((RR2*2e6, RR1*2e6), radius=0.12, color='red')
+#         pl.gca().add_patch(cc_gt)
+
+#     pl.gca().set_aspect(aspect=1)
+
+#     pl.xlabel(r'$d_2$ ($\mu$m)', fontsize=14)
+#     pl.ylabel(r'$d_1$ ($\mu$m)', fontsize=14)
+#     pl.xticks(fontsize=12)
+#     pl.yticks(fontsize=12)
+
+#     pl.title(r'${:.0f}\% \,d_1 + {:.0f}\% \,d_2$'.format(f*100, (1-f)*100), fontsize=14)
+
+# # pl.tight_layout()
+# pl.show()
+
+
+
+
 import matplotlib.ticker as ticker
 def fmt(x, pos):
-    a, b = '{:.0e}'.format(x).split('e')
-    b = int(b)+2
-    return r'${} \times 10^{{{}}}$ \%'.format(a, b)
+    a, b = '{:.1f}'.format(100*x).split('.')
+    return r'{:}.{:} \%'.format(a, b)
 
+# TODO handle case with not digit
+# # multiply by 100 and print all digit before decimal and up to the first 2 decimal
+# def fmt(x, pos):
+#     a, b = '{:.15f}'.format(100*x).split('.')
+#     # pre decimal
+#     a = int(a)
+#     # search for first non zero decimal
+#     notZero = np.array([digt!='0' for digt in b])
+#     posFirstDigit = np.where(notZero)[0][0]
+#     # check for rounding with 3rd digit
+#     if int(b[posFirstDigit+2]) < 5:
+#         c = '0'*posFirstDigit + b[posFirstDigit] + b[posFirstDigit+1]
+#     else:
+#         # we SHOULD check if b[posFirstDigit+1]+1 is 10, and if it is we increase b[posFirstDigit] by one and if it is also 10 now ....
+#         # but I wont
+#         c = '0'*posFirstDigit + b[posFirstDigit] + str(int(b[posFirstDigit+1])+1)
+
+#     return r'{:}.{:} \%'.format(a, c)
 
 
 
@@ -228,39 +333,51 @@ levels = [0, 0.001, 0.005, 0.01, 0.05]
 mycolormap = pl.cm.jet
 # mycolormap = pl.cm.plasma
 # mycolormap = pl.cm.viridis
-_colors = [mycolormap(i) for i in np.linspace(0, 1, len(levels))]
+# _colors = [mycolormap(i) for i in np.linspace(0, 1, len(levels))]
 
-pl.figure(figsize=(14,12))
+# np.random.seed(2)
+# _colors = [(np.random.rand(), np.random.rand(), np.random.rand(), 1.0) for i in range(5)] 
 
-pl.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.05, hspace=0.5)
-for i,f in enumerate(fs):
-    pl.subplot(x1,x2,i+1)
-    cp = pl.contourf(Rs*2e6, Rs*2e6, err_S[i], levels, colors=_colors)
-    cbar = pl.colorbar(cp, format=ticker.FuncFormatter(fmt))
+# nicely distinguisable from set1 categorical
+_colors = ['#984ea3', '#4daf4a', '#377eb8', '#ff7f00', '#e41a1c']
+
+fig, axes = pl.subplots(nrows=3, ncols=3, sharex=False, sharey=False, figsize=(14,12))
+fig.subplots_adjust(left=0.125, bottom=0.1, right=0.9, top=0.9, wspace=0.05, hspace=0.5)
+
+
+for ix,iy in np.ndindex((x1,x2)):
+    i = ix*x2 + iy
+    f = fs[i]
+    axs = axes[ix, iy]
+    cp = axs.contourf(Rs*2e6, Rs*2e6, err_S[i], levels, colors=_colors)
+    # cbar = pl.colorbar(cp, format=ticker.FuncFormatter(fmt))
     # cbar = pl.colorbar(cp, format=ticker.FuncFormatter(fmt))
     # cbar.ax.tick_params(labelsize=textfs)
 
-    cc_deff = Circle((Deff*1e6, Deff*1e6), radius=0.10, color='black')
-    pl.gca().add_patch(cc_deff)
+    # cc_deff = Circle((Deff*1e6, Deff*1e6), radius=0.10, color='black')
+    # pl.gca().add_patch(cc_deff)
 
     if np.abs(f-ff1)<0.01:
         cc_gt = Circle((RR2*2e6, RR1*2e6), radius=0.12, color='red')
-        pl.gca().add_patch(cc_gt)
+        axs.add_patch(cc_gt)
 
-    pl.gca().set_aspect(aspect=1)
+    # pl.gca().set_aspect(aspect=1)
+    axs.set_aspect(aspect=1)
 
-    pl.xlabel(r'$d_2$ ($\mu$m)', fontsize=14)
-    pl.ylabel(r'$d_1$ ($\mu$m)', fontsize=14)
-    pl.xticks(fontsize=12)
-    pl.yticks(fontsize=12)
+    axs.set_xlabel(r'$d_2$ ($\mu$m)', fontsize=16)
+    axs.set_ylabel(r'$d_1$ ($\mu$m)', fontsize=16)
+    axs.set_xticks(range(1,7))
+    axs.set_yticks(range(1,7))
+    axs.set_xticklabels(range(1,7), fontsize=14)
+    axs.set_yticklabels(range(1,7), fontsize=14)
 
-    pl.title(r'${:.0f}\% \,d_1 + {:.0f}\% \,d_2$'.format(f*100, (1-f)*100), fontsize=14)
+    axs.set_title(r'{:.0f}\% $d_1$ + {:.0f}\% $d_2$'.format(f*100, (1-f)*100), fontsize=16)
+
+cbar = fig.colorbar(cp, ax=axes.ravel().tolist(), format=ticker.FuncFormatter(fmt))
+cbar.ax.tick_params(labelsize=18)
+
+
 
 # pl.tight_layout()
 pl.show()
-
-
-
-
-
 

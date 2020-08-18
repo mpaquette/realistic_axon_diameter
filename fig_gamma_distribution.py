@@ -183,11 +183,15 @@ for k_i, k_1 in enumerate(krange):
 endt = time()
 print('time = {:.0f} seconds for {} gammas'.format(endt-startt, krange.shape[0]*thetarange.shape[0]))
 
-errorfunc=lambda S,gt: np.sum((S-gt)**2)/np.sum(gt**2)
+# errorfunc=lambda S,gt: np.sum((S-gt)**2)/np.sum(gt**2)
+errorfunc=lambda S,gt: np.sum((S-gt)**2)/len(gt)
 
+
+# # compute NMSE error
+# errors = np.sum((data - signal_full)**2, axis=2) / np.sum((signal_full)**2)
 
 # compute NMSE error
-errors = np.sum((data - signal_full)**2, axis=2) / np.sum((signal_full)**2)
+errors = np.sum((data - signal_full)**2, axis=2) / len(signal_full)
 
 data_deff = 2*reff_gamma(k_data, t_data)
 
@@ -201,7 +205,7 @@ xcc = f_t(theta)
 
 pl.figure()
 pl.imshow(errors)
-pl.title('errors vs (k={:.2f} t={:.2f}) for k in [{:.2f} {:.2f}] and t in [{:.2f} {:.2f}]'.format(k, theta, krange.min(), krange.max(), peakrange.min(), peakrange.max()))
+pl.title('errors vs (k={:.2f} t={:.2f}) for k in [{:.2f} {:.2f}] and t in [{:.2f} {:.2f}]'.format(k, theta, krange.min(), krange.max(), thetarange.min(), thetarange.max()))
 pl.colorbar()
 cc = Circle((xcc, ycc), radius=0.5, color='red')
 pl.gca().add_patch(cc)
@@ -282,7 +286,7 @@ pl.gca().add_patch(cc)
 
 pl.figure()
 pl.imshow(np.log10(errors))
-pl.title('log10 errors vs (k={:.2f} t={:.2f}) for k in [{:.2f} {:.2f}] and t in [{:.2f} {:.2f}]'.format(k, theta, krange.min(), krange.max(), peakrange.min(), peakrange.max()))
+pl.title('log10 errors vs (k={:.2f} t={:.2f}) for k in [{:.2f} {:.2f}] and t in [{:.2f} {:.2f}]'.format(k, theta, krange.min(), krange.max(), thetarange.min(), thetarange.max()))
 pl.colorbar()
 cc = Circle((xcc, ycc), radius=0.5, color='red')
 pl.gca().add_patch(cc)

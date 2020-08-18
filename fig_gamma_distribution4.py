@@ -196,7 +196,8 @@ for k_i, k_1 in enumerate(krange):
 endt = time()
 print('time = {:.0f} seconds for {} gammas'.format(endt-startt, krange.shape[0]*peakrange.shape[0]))
 
-errorfunc=lambda S,gt: np.sum((S-gt)**2)/np.sum(gt**2)
+# errorfunc=lambda S,gt: np.sum((S-gt)**2)/np.sum(gt**2)
+errorfunc=lambda S,gt: np.sum((S-gt)**2)/len(gt)
 
 
 # compute NMSE error
